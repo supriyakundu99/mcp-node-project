@@ -1,0 +1,9 @@
+@serverUrl = http://localhost:3000
+
+### Call API
+GET {{serverUrl}}/
+
+
+### Data API
+GET {{serverUrl}}/data
+Content-Type: application/json
