@@ -12,7 +12,7 @@ const getWeatherDataByCity = async (city: string) => {
     case "howrah":
       return {
         city: "howrah",
-        temperature: "25C",
+        temperature: "30°C",
         weather: "sunny",
         forecast: "sunny",
         wind: "10 km/h",
@@ -24,7 +24,7 @@ const getWeatherDataByCity = async (city: string) => {
     case "kolkata":
       return {
         city: "kolkata",
-        temperature: "25C",
+        temperature: "35°C",
         weather: "sunny",
         forecast: "Heavy Rain",
         wind: "10 km/h",
@@ -36,7 +36,7 @@ const getWeatherDataByCity = async (city: string) => {
     case "delhi":
       return {
         city: "delhi",
-        temperature: "25C",
+        temperature: "27°C",
         weather: "sunny",
         forecast: "Cloudy",
         wind: "10 km/h",
