@@ -12,6 +12,14 @@ const studentMcpServer = new McpServer({
 const studentService = new StudentService();
 
 // Student CRUD operations
+
+studentMcpServer.tool("getStudentStatisticsWithCount", {}, async () => {
+  const statistics = await studentService.getStudentStatistics();
+  return {
+    content: [{ type: "text", text: JSON.stringify(statistics) }],
+  };
+});
+
 studentMcpServer.tool(
   "createStudent",
   {

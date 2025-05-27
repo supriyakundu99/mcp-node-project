@@ -18,6 +18,35 @@ interface StudentMarks {
 }
 
 export class StudentService {
+  // Get Student Statistics
+  async getStudentStatistics() {
+    const [byDeptAndClass, byDept, byClass, total] = await Promise.all([
+      query(
+        "SELECT department, class_year, COUNT(*) as count FROM student_schema.students GROUP BY department, class_year"
+      ),
+      query(
+        "SELECT department, COUNT(*) as count FROM student_schema.students GROUP BY department"
+      ),
+      query(
+        "SELECT class_year, COUNT(*) as count FROM student_schema.students GROUP BY class_year"
+      ),
+      query("SELECT COUNT(*) as total_count FROM student_schema.students"),
+    ]);
+
+    return {
+      byDepartmentAndClass: byDeptAndClass.rows,
+      byDepartment: byDept.rows,
+      byClassYear: byClass.rows,
+      totalStudents: total.rows[0].total_count,
+    };
+  }
+
+  // Get total number of students
+  async getTotalStudents() {
+    const result = await query("SELECT COUNT(*) as total_count FROM student_schema.students");
+    return parseInt(result.rows[0].total_count);
+  }
+
   // Student CRUD operations
   async createStudent(student: Student) {
     const { name, roll_number, department, class_year, email } = student;
@@ -29,7 +58,10 @@ export class StudentService {
   }
 
   async getStudent(id: number) {
-    const result = await query("SELECT * FROM student_schema.students WHERE id = $1", [id]);
+    const result = await query(
+      "SELECT * FROM student_schema.students WHERE id = $1",
+      [id]
+    );
     return result.rows[0];
   }
 
@@ -93,23 +125,26 @@ export class StudentService {
 
   // Search operations
   async searchStudentsByName(name: string) {
-    const result = await query("SELECT * FROM student_schema.students WHERE name ILIKE $1", [
-      `%${name}%`,
-    ]);
+    const result = await query(
+      "SELECT * FROM student_schema.students WHERE name ILIKE $1",
+      [`%${name}%`]
+    );
     return result.rows;
   }
 
   async searchStudentsByDepartment(department: string) {
-    const result = await query("SELECT * FROM student_schema.students WHERE department = $1", [
-      department,
-    ]);
+    const result = await query(
+      "SELECT * FROM student_schema.students WHERE department = $1",
+      [department]
+    );
     return result.rows;
   }
 
   async searchStudentsByClass(class_year: number) {
-    const result = await query("SELECT * FROM student_schema.students WHERE class_year = $1", [
-      class_year,
-    ]);
+    const result = await query(
+      "SELECT * FROM student_schema.students WHERE class_year = $1",
+      [class_year]
+    );
     return result.rows;
   }
 
