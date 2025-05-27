@@ -1,5 +1,7 @@
 import express, { Request, Response } from 'express';
 import * as db from './db';
+import { handleMcpPostMessage } from './mcp/weather-mcp-http';
+import { IncomingMessage, ServerResponse } from 'http';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -8,6 +10,11 @@ app.use(express.json());
 
 app.get('/', (_req: Request, res: Response) => {
   res.send('Welcome to the Express PostgreSQL App!');
+});
+
+// MCP endpoint
+app.post('/mcp', (req, res) => {
+  handleMcpPostMessage(req as IncomingMessage, res as unknown as ServerResponse);
 });
 
 // Example route to get data from the database
@@ -25,4 +32,5 @@ app.get('/data', async (_req: Request, res: Response) => {
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`MCP endpoint available at http://localhost:${PORT}/mcp`);
 }); 

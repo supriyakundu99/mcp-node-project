@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "weather-mcp-stdio": {
+      "command": "node",
+      "args": ["D:\\NodeJS\\mcp-node-project\\dist\\mcp\\weather-mcp-stdio.js"]
+    },
+    "weather-mcp-http": {
+      "url": "http://localhost:3000/mcp"
+    }
+  }
+}
