@@ -1,7 +1,8 @@
 import express, { Request, Response } from 'express';
 import * as db from './db';
-import { handleMcpPostMessage } from './mcp/weather-mcp-http';
+import { handleWeatherMcpPostMessage } from './mcp/weather-mcp-http';
 import { IncomingMessage, ServerResponse } from 'http';
+import { handleStudentMcpPostMessage } from './mcp/student-mcp-http';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,8 +14,12 @@ app.get('/', (_req: Request, res: Response) => {
 });
 
 // MCP endpoint
-app.post('/mcp', (req, res) => {
-  handleMcpPostMessage(req as IncomingMessage, res as unknown as ServerResponse);
+app.post('/mcp-weather', (req, res) => {
+  handleWeatherMcpPostMessage(req as IncomingMessage, res as unknown as ServerResponse);
+});
+
+app.post('/mcp-student', (req, res) => {
+  handleStudentMcpPostMessage(req as IncomingMessage, res as unknown as ServerResponse);
 });
 
 // Example route to get data from the database

@@ -1,7 +1,14 @@
 {
   "mcpServers": {
     "weather-mcp": {
-      "url": "http://localhost:3000/mcp"
+      "command": "node",
+      "args": ["D:\\NodeJS\\mcp-node-project\\dist\\mcp\\weather-mcp-stdio.js"]
+    },
+    "weather-mcp-http": {
+      "url": "http://localhost:3000/mcp-weather"
+    },
+    "student-mcp-http": {
+      "url": "http://localhost:3000/mcp-student"
     }
   }
-} 
+}

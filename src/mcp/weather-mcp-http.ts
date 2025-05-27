@@ -84,7 +84,7 @@ weatherMcpServer.tool(
   }
 );
 
-export const handleMcpPostMessage = async (req: IncomingMessage, res: ServerResponse) => {
+export const handleWeatherMcpPostMessage = async (req: IncomingMessage, res: ServerResponse) => {
   const transport: StreamableHTTPServerTransport = new StreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
   });
