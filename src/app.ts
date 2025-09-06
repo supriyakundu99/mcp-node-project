@@ -19,6 +19,7 @@ app.post('/mcp-weather', (req, res) => {
 });
 
 app.post('/mcp-student', (req, res) => {
+  console.log('Received request at /mcp-student');
   handleStudentMcpPostMessage(req as IncomingMessage, res as unknown as ServerResponse);
 });
 

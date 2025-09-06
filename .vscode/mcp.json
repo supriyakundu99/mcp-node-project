@@ -1,0 +1,9 @@
+{
+  "servers": {
+    "node-student-mcp-test": {
+      "url": "http://localhost:3000/mcp-student",
+      "type": "http"
+    }
+  },
+  "inputs": []
+}
