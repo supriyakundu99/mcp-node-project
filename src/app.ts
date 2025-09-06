@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import path from 'path';
 import { handleWeatherMcpPostMessage } from './mcp/weather-mcp-http';
 import { IncomingMessage, ServerResponse } from 'http';
 import { handleStudentMcpPostMessage } from './mcp/student-mcp-http';
@@ -9,9 +10,14 @@ const PORT = process.env.PORT || 3000;
 const ollamaService = new OllamaService();
 
 app.use(express.json());
+app.use(express.static(path.join(__dirname, '../public')));
 
 app.get('/', (_req: Request, res: Response) => {
   res.send('Welcome to the Express PostgreSQL App!');
+});
+
+app.get('/chat', (_req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, '../public/chat.html'));
 });
 
 // Ollama API endpoint
@@ -38,6 +44,8 @@ app.post('/mcp-student', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Chat UI available at http://localhost:${PORT}/chat`);
   console.log(`Ollama API available at http://localhost:${PORT}/api/ollama`);
-  console.log(`MCP endpoint available at http://localhost:${PORT}/mcp`);
+  console.log(`Weather MCP endpoint available at http://localhost:${PORT}/mcp-weather`);
+  console.log(`Student MCP endpoint available at http://localhost:${PORT}/mcp-student`);
 });
