@@ -3,7 +3,14 @@
 ### Call API
 GET {{serverUrl}}/
 
-
-### Data API
-GET {{serverUrl}}/data
+### Ollama API - Ask question
+POST http://localhost:3000/api/ollama
 Content-Type: application/json
+
+# {
+#   "prompt": "What is the capital of France?"
+# }
+
+{
+  "prompt": "What is the capital of India?"
+}
