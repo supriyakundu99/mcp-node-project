@@ -4,15 +4,12 @@
 GET {{serverUrl}}/
 
 ### Ollama API - Ask question
+@prompt = Tomorrow forecast in London?
 POST http://localhost:3000/api/ollama
 Content-Type: application/json
 
-# {
-#   "prompt": "What is the capital of France?"
-# }
-
 {
-  "prompt": "3 most polluted cities in India"
+  "prompt": "{{prompt}}"
 }
 
 ### Weather API - Get weather by city

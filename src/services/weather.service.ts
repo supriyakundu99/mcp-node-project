@@ -49,7 +49,7 @@ export class WeatherService {
   getWeatherDataByCity = async (
     city: string
   ): Promise<WeatherInfo | UnknownCityResult> => {
-    console.log("==== getWeatherDataByCity:", city);
+    console.log("[WeatherService] Get weather data by city:", city);
 
     if (!city || typeof city !== "string") {
       throw new Error("City name must be a valid string");
@@ -84,7 +84,7 @@ export class WeatherService {
     isHigher: boolean
   ): Promise<AQIFilterResult> => {
     console.log(
-      `==== getCitiesByAQI: threshold ${threshold}, isHigher: ${isHigher}`
+      `[WeatherService] Get cities by AQI: threshold ${threshold}, isHigher: ${isHigher}`
     );
 
     // Input validation
@@ -119,7 +119,7 @@ export class WeatherService {
         cities: filteredCities,
       };
     } catch (error) {
-      console.error("Error filtering cities by AQI:", error);
+      console.error("[WeatherService] Error filtering cities by AQI:", error);
       throw new Error("Failed to filter cities by AQI");
     }
   };
@@ -129,7 +129,7 @@ export class WeatherService {
    * @returns list of all city names
    */
   getAllCities = (): string[] => {
-    console.log("==== getAllCities");
+    console.log("[WeatherService] Get all cities");
     return Object.keys(weatherData.cities);
   };
 
@@ -141,7 +141,7 @@ export class WeatherService {
   getCitiesByWeatherCondition = async (
     condition: string
   ): Promise<WeatherInfo[]> => {
-    console.log("==== getCitiesByWeatherCondition:", condition);
+    console.log("[WeatherService] Get cities by weather condition:", condition);
 
     if (!condition || typeof condition !== "string") {
       throw new Error("Weather condition must be a valid string");
@@ -169,7 +169,7 @@ export class WeatherService {
     maxTemp?: number
   ): Promise<TemperatureFilterResult> => {
     console.log(
-      `==== getCitiesByTemperatureRange: min ${minTemp}, max ${maxTemp}`
+      `[WeatherService] Get cities by temperature range: min ${minTemp}, max ${maxTemp}`
     );
 
     // Input validation
@@ -216,7 +216,7 @@ export class WeatherService {
         cities: filteredCities,
       };
     } catch (error) {
-      console.error("Error filtering cities by temperature:", error);
+      console.error("[WeatherService] Error filtering cities by temperature:", error);
       throw new Error("Failed to filter cities by temperature range");
     }
   };

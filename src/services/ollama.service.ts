@@ -1,5 +1,7 @@
 import axios from "axios";
 import { WeatherService } from "./weather.service";
+import { createWeatherIntentPrompt } from "../prompts/weather-intent.prompt";
+import { createWeatherResponsePrompt, NON_WEATHER_RESPONSE_PROMPT } from "../prompts/weather-response.prompt";
 
 interface WeatherIntent {
   type:
@@ -30,60 +32,7 @@ export class OllamaService {
       prompt
     );
 
-    const systemPrompt = `You are an intelligent weather intent analyzer. Analyze the user's prompt and determine if it is a request for weather information then analyze what information about the weather is being requested.
-
-AVAILABLE CITIES: ${this.availableCities.join(", ")}
-
-AVAILABLE TOOLS:
-1. fetchWeatherByCity - Get complete weather data for a specific city
-2. getCitiesByAQI - Get cities filtered by Air Quality Index
-3. getCitiesByTemperatureRange - Get cities filtered by temperature range
-
-ANALYSIS RULES:
-1. If user mentions a specific city name (even variations like "Calcutta" for "Kolkata"), use fetchWeatherByCity
-2. If user asks general "how is weather" without city, try to infer location or ask for default city (Kolkata)
-3. If user asks about pollution, air quality, AQI, smog, etc., use getCitiesByAQI
-4. If user asks about hot/cold cities, temperature comparisons, use getCitiesByTemperatureRange
-5. If user asks about weather conditions (rain, sunny, etc.) without specifying, use getCitiesByTemperatureRange
-6. If user prompt is unrelated to weather, return type "none"
-7. If the prompt is related to code, programming, math, or other non-weather topics, return type "none"
-
-CITY NAME VARIATIONS:
-- Calcutta = Kolkata
-- Bombay = Mumbai
-- Bengaluru = Bangalore
-
-EXAMPLES:
-- "How is the weather?" → fetchWeatherByCity with city: "kolkata" (default)
-- "Weather in Mumbai" → fetchWeatherByCity with city: "mumbai"
-- "What is 2+2?" → type: "none"
-- "Is it going to rain in Delhi?" → fetchWeatherByCity with city: "delhi"
-- "Which cities have bad air quality?" → getCitiesByAQI with threshold: 100, isHigher: true
-- "Show me cities with good AQI" → getCitiesByAQI with threshold: 100, isHigher: false
-- "Is Delhi polluted?" → getCitiesByAQI with threshold: 100, isHigher: true
-- "Is the air quality good in Bangalore?" → getCitiesByAQI with threshold: 100, isHigher: false
-- "Less polluted cities" → getCitiesByAQI with threshold: 100, isHigher: false
-- "Which cities are hot today?" → getCitiesByTemperatureRange with minTemp: 35
-- "Cold places" → getCitiesByTemperatureRange with maxTemp: 25
-- "Cities with temperature between 25 and 35" → getCitiesByTemperatureRange with minTemp: 25, maxTemp: 35
-- Write a program to calculate factorial → type: "none"
-
-OUTPUT FORMAT:
-Respond only in JSON format with the following structure. Omit any fields that are not applicable.
-Return ONLY a JSON object with this exact structure:
-{
-  "type": "tool_name",
-  "city": "city_name_if_needed",
-  "threshold": number_if_needed,
-  "isHigher": boolean_if_needed,
-  "minTemp": number_if_needed,
-  "maxTemp": number_if_needed,
-  "confidence": confidence_score_0_to_1
-}
-
-User prompt: "${prompt}"
-
-JSON Response:`;
+    const systemPrompt = createWeatherIntentPrompt(prompt, this.availableCities);
 
     try {
       const response = await axios.post(`${this.baseUrl}/api/generate`, {
@@ -121,7 +70,7 @@ JSON Response:`;
         console.log(
           `⚠️ [OllamaService] City '${intent.city}' not available, falling back`
         );
-        intent.city = "kolkata";
+        intent.city = "Unknown";
       }
     }
 
@@ -308,43 +257,8 @@ JSON Response:`;
 
       console.log("💬 [OllamaService] Generating final response");
       const systemPrompt = weatherData
-        ? `You are a helpful weather assistant with access to current weather information. Answer the user's question directly and naturally using the weather information available to you.
-
-IMPORTANT INSTRUCTIONS:
-- Answer as if you have real-time weather knowledge, don't mention "based on data provided" or similar phrases
-- Use markdown formatting for better readability
-- Be conversational and friendly
-- Format temperatures, AQI values, and weather conditions clearly
-- When showing multiple cities, use tables or lists for better organization
-- Include relevant details like humidity, wind speed, air quality when appropriate
-- If user asks about temperature comparisons, give direct answers like "Bangalore is the coolest at 24°C"
-
-FORMATTING GUIDELINES:
-- Use **bold** for city names and important values
-- Use proper markdown headers (## ###) for sections
-- Use tables for comparing multiple cities
-- Use bullet points or numbered lists when listing information
-- Include emojis where appropriate (🌡️ for temperature, 🌧️ for rain, etc.)
-
-Current Weather Information Available:
-${JSON.stringify(weatherData, null, 2)}
-
-Answer the user's question directly using this weather information.`
-        : `You are a specialized weather assistant. I can only help with weather-related questions such as:
-
-## What I can help with: 🌤️
-- **Weather conditions** in specific cities (Kolkata, Mumbai, Delhi, Bangalore, Howrah)
-- **Temperature comparisons** between cities
-- **Air quality information** and pollution levels
-- **Weather forecasts** and current conditions
-
-## Examples of questions I can answer:
-- "How's the weather in Mumbai?"
-- "Which cities have the hottest weather today?"
-- "Show me cities with good air quality"
-- "What's the temperature in Bangalore?"
-
-I'm sorry, but I cannot help with programming, coding, math problems, or other non-weather related topics. Please ask me about weather conditions instead! 🌦️`;
+        ? createWeatherResponsePrompt(weatherData)
+        : NON_WEATHER_RESPONSE_PROMPT;
 
       console.log(
         "📤 [OllamaService] Sending final response request to Ollama"
