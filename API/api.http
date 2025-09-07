@@ -23,3 +23,8 @@ GET {{serverUrl}}/weather/{{city}}
 @threshold = 100
 @isHigher = true
 GET {{serverUrl}}/aqi/cities?threshold={{threshold}}&isHigher={{isHigher}}
+
+### Temperature API - Get cities by temperature range
+@min = 15
+@max = 40
+GET {{serverUrl}}/temperature/cities?min={{min}}&max={{max}}

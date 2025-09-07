@@ -59,6 +59,15 @@ app.get('/aqi/cities', async (req: Request, res: Response) => {
   res.json(result);
 });
 
+// Get cities by temperature range
+app.get('/temperature/cities', async (req: Request, res: Response) => {
+  const min = req.query.min ? parseInt(req.query.min as string) : undefined;
+  const max = req.query.max ? parseInt(req.query.max as string) : undefined;
+
+  const result = await weatherService.getCitiesByTemperatureRange(min, max);
+  res.json(result);
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
   console.log(`Chat UI available at http://localhost:${PORT}/chat`);

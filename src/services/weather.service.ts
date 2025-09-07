@@ -25,6 +25,21 @@ interface UnknownCityResult {
   current: "unknown";
 }
 
+interface TemperatureFilterResult {
+  count: number;
+  minTemp?: number;
+  maxTemp?: number;
+  cities: TemperatureCityResult[];
+}
+
+interface TemperatureCityResult {
+  city: string;
+  temperature: string;
+  weather: string;
+  aqi: string;
+  description: string;
+}
+
 export class WeatherService {
   /**
    * Get weather data by city name
@@ -147,23 +162,62 @@ export class WeatherService {
    * Get cities with extreme temperatures
    * @param minTemp - minimum temperature threshold (in Celsius, without °C)
    * @param maxTemp - maximum temperature threshold (in Celsius, without °C)
-   * @returns cities within the temperature range
+   * @returns cities within the temperature range with metadata
    */
   getCitiesByTemperatureRange = async (
     minTemp?: number,
     maxTemp?: number
-  ): Promise<WeatherInfo[]> => {
+  ): Promise<TemperatureFilterResult> => {
     console.log(
       `==== getCitiesByTemperatureRange: min ${minTemp}, max ${maxTemp}`
     );
 
-    return Object.values(weatherData.cities).filter((cityData) => {
-      const temp = parseInt(cityData.temperature.replace("°C", ""));
+    // Input validation
+    if (
+      minTemp !== undefined &&
+      (typeof minTemp !== "number" || isNaN(minTemp))
+    ) {
+      throw new Error("minTemp must be a valid number");
+    }
+    if (
+      maxTemp !== undefined &&
+      (typeof maxTemp !== "number" || isNaN(maxTemp))
+    ) {
+      throw new Error("maxTemp must be a valid number");
+    }
+    if (minTemp !== undefined && maxTemp !== undefined && minTemp > maxTemp) {
+      throw new Error("minTemp cannot be greater than maxTemp");
+    }
 
-      if (minTemp !== undefined && temp < minTemp) return false;
-      if (maxTemp !== undefined && temp > maxTemp) return false;
+    try {
+      const filteredCities = Object.values(weatherData.cities)
+        .filter((cityData) => {
+          const temp = parseInt(cityData.temperature.replace("°C", ""));
 
-      return true;
-    });
+          if (minTemp !== undefined && temp < minTemp) return false;
+          if (maxTemp !== undefined && temp > maxTemp) return false;
+
+          return true;
+        })
+        .map(
+          (cityData): TemperatureCityResult => ({
+            city: cityData.city,
+            temperature: cityData.temperature,
+            weather: cityData.weather,
+            aqi: cityData.current.airQuality.index,
+            description: cityData.current.airQuality.description,
+          })
+        );
+
+      return {
+        count: filteredCities.length,
+        minTemp,
+        maxTemp,
+        cities: filteredCities,
+      };
+    } catch (error) {
+      console.error("Error filtering cities by temperature:", error);
+      throw new Error("Failed to filter cities by temperature range");
+    }
   };
 }
