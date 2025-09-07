@@ -128,7 +128,7 @@ export class WeatherService {
    * Get all available cities
    * @returns list of all city names
    */
-  getAllCities = async (): Promise<string[]> => {
+  getAllCities = (): string[] => {
     console.log("==== getAllCities");
     return Object.keys(weatherData.cities);
   };
