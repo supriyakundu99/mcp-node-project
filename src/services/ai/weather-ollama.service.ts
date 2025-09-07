@@ -1,7 +1,7 @@
 import axios from "axios";
-import { WeatherService } from "./weather.service";
-import { createWeatherIntentPrompt } from "../prompts/weather-intent.prompt";
-import { createWeatherResponsePrompt, NON_WEATHER_RESPONSE_PROMPT } from "../prompts/weather-response.prompt";
+import { WeatherService } from "../system/weather.service";
+import { createWeatherIntentPrompt } from "../../prompts/weather-intent.prompt";
+import { createWeatherResponsePrompt, NON_WEATHER_RESPONSE_PROMPT } from "../../prompts/weather-response.prompt";
 
 interface WeatherIntent {
   type:
@@ -17,7 +17,7 @@ interface WeatherIntent {
   confidence?: number;
 }
 
-export class OllamaService {
+export class WeatherOllamaService {
   private baseUrl = "http://localhost:11434";
   private weatherService = new WeatherService();
 

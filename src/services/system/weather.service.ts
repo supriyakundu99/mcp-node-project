@@ -1,4 +1,4 @@
-import { weatherData, WeatherInfo } from "../data/weather-data";
+import { weatherData, WeatherInfo } from "../../data/weather-data";
 
 // Additional interface for AQI results
 interface AQICityResult {

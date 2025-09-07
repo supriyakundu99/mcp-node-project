@@ -3,12 +3,12 @@ import path from 'path';
 import { handleWeatherMcpPostMessage } from './mcp/weather-mcp-http';
 import { IncomingMessage, ServerResponse } from 'http';
 import { handleStudentMcpPostMessage } from './mcp/student-mcp-http';
-import { OllamaService } from './services/ollama.service';
-import { WeatherService } from './services/weather.service';
+import { WeatherOllamaService } from './services/ai/weather-ollama.service';
+import { WeatherService } from './services/system/weather.service';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ollamaService = new OllamaService();
+const ollamaService = new WeatherOllamaService();
 const weatherService = new WeatherService();
 
 app.use(express.json());
