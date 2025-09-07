@@ -19,7 +19,6 @@ export class OllamaService {
   private baseUrl = "http://localhost:11434";
   private weatherService = new WeatherService();
 
-  // Available cities in our system
   private availableCities = this.weatherService.getAllCities();
 
   private async intelligentWeatherIntentDetection(
@@ -31,7 +30,7 @@ export class OllamaService {
       prompt
     );
 
-    const systemPrompt = `You are an intelligent weather intent analyzer. Analyze the user's prompt and determine what weather information they need.
+    const systemPrompt = `You are an intelligent weather intent analyzer. Analyze the user's prompt and determine if it is a request for weather information then analyze what information about the weather is being requested.
 
 AVAILABLE CITIES: ${this.availableCities.join(", ")}
 
@@ -46,6 +45,8 @@ ANALYSIS RULES:
 3. If user asks about pollution, air quality, AQI, smog, etc., use getCitiesByAQI
 4. If user asks about hot/cold cities, temperature comparisons, use getCitiesByTemperatureRange
 5. If user asks about weather conditions (rain, sunny, etc.) without specifying, use getCitiesByTemperatureRange
+6. If user prompt is unrelated to weather, return type "none"
+7. If the prompt is related to code, programming, math, or other non-weather topics, return type "none"
 
 CITY NAME VARIATIONS:
 - Calcutta = Kolkata
@@ -55,12 +56,20 @@ CITY NAME VARIATIONS:
 EXAMPLES:
 - "How is the weather?" → fetchWeatherByCity with city: "kolkata" (default)
 - "Weather in Mumbai" → fetchWeatherByCity with city: "mumbai"
+- "What is 2+2?" → type: "none"
+- "Is it going to rain in Delhi?" → fetchWeatherByCity with city: "delhi"
 - "Which cities have bad air quality?" → getCitiesByAQI with threshold: 100, isHigher: true
 - "Show me cities with good AQI" → getCitiesByAQI with threshold: 100, isHigher: false
+- "Is Delhi polluted?" → getCitiesByAQI with threshold: 100, isHigher: true
+- "Is the air quality good in Bangalore?" → getCitiesByAQI with threshold: 100, isHigher: false
+- "Less polluted cities" → getCitiesByAQI with threshold: 100, isHigher: false
 - "Which cities are hot today?" → getCitiesByTemperatureRange with minTemp: 35
 - "Cold places" → getCitiesByTemperatureRange with maxTemp: 25
 - "Cities with temperature between 25 and 35" → getCitiesByTemperatureRange with minTemp: 25, maxTemp: 35
+- Write a program to calculate factorial → type: "none"
 
+OUTPUT FORMAT:
+Respond only in JSON format with the following structure. Omit any fields that are not applicable.
 Return ONLY a JSON object with this exact structure:
 {
   "type": "tool_name",
@@ -84,9 +93,11 @@ JSON Response:`;
       });
 
       const intentResult = JSON.parse(response.data.response.trim());
-      console.log("✅ [OllamaService] Intent analysis result:", intentResult);
+      console.log(
+        "✅ [OllamaService] Intent analysis result:",
+        JSON.stringify(intentResult)
+      );
 
-      // Post-process and validate the result
       return this.validateAndEnhanceIntent(intentResult, prompt);
     } catch (error) {
       console.log(
@@ -102,38 +113,32 @@ JSON Response:`;
   ): WeatherIntent {
     console.log("🔍 [OllamaService] Validating and enhancing intent");
 
-    // If city is mentioned but not in available cities, try to map it
     if (intent.type === "fetchWeatherByCity" && intent.city) {
       const normalizedCity = this.normalizeCityName(intent.city);
       if (this.availableCities.includes(normalizedCity)) {
         intent.city = normalizedCity;
       } else {
-        // City not available, fallback to general weather
         console.log(
           `⚠️ [OllamaService] City '${intent.city}' not available, falling back`
         );
-        intent.city = "kolkata"; // Default city
+        intent.city = "kolkata";
       }
     }
 
-    // If no city specified for fetchWeatherByCity, default to kolkata
     if (intent.type === "fetchWeatherByCity" && !intent.city) {
       intent.city = "kolkata";
     }
 
-    // Validate AQI parameters
     if (intent.type === "getCitiesByAQI") {
       if (!intent.threshold) {
-        intent.threshold = 100; // Default AQI threshold
+        intent.threshold = 100;
       }
       if (intent.isHigher === undefined) {
-        intent.isHigher = true; // Default to higher than threshold
+        intent.isHigher = true;
       }
     }
 
-    // Validate temperature parameters
     if (intent.type === "getCitiesByTemperatureRange") {
-      // If no temperature specified, try to infer from prompt
       if (!intent.minTemp && !intent.maxTemp) {
         if (originalPrompt.toLowerCase().includes("hot")) {
           intent.minTemp = 35;
@@ -143,7 +148,6 @@ JSON Response:`;
         ) {
           intent.maxTemp = 25;
         } else {
-          // Default to moderate temperature range
           intent.minTemp = 20;
           intent.maxTemp = 40;
         }
@@ -158,7 +162,6 @@ JSON Response:`;
 
     const lowerPrompt = prompt.toLowerCase();
 
-    // Check for city mentions
     for (const city of this.availableCities) {
       if (
         lowerPrompt.includes(city) ||
@@ -174,7 +177,6 @@ JSON Response:`;
       }
     }
 
-    // Check for AQI/pollution keywords
     const aqiKeywords = [
       "aqi",
       "air quality",
@@ -196,7 +198,6 @@ JSON Response:`;
       };
     }
 
-    // Check for temperature keywords
     const tempKeywords = ["hot", "cold", "temperature", "warm", "cool", "heat"];
     if (tempKeywords.some((keyword) => lowerPrompt.includes(keyword))) {
       let minTemp, maxTemp;
@@ -212,7 +213,6 @@ JSON Response:`;
       };
     }
 
-    // Default to weather for current location (Kolkata)
     if (lowerPrompt.includes("weather") || lowerPrompt.includes("how is")) {
       return {
         type: "fetchWeatherByCity",
@@ -237,7 +237,10 @@ JSON Response:`;
   }
 
   private async callWeatherTool(intent: WeatherIntent): Promise<any> {
-    console.log("🌤️ [OllamaService] Calling weather tool with intent:", intent);
+    console.log(
+      "🌤️ [OllamaService] Calling weather tool with intent:",
+      JSON.stringify(intent)
+    );
 
     switch (intent.type) {
       case "fetchWeatherByCity":
@@ -279,29 +282,31 @@ JSON Response:`;
   }
 
   async generateResponse(prompt: string, model: string = "llama2") {
-    console.log(`🚀 [OllamaService] Starting intelligent response generation with prompt: ${prompt}, model: ${model}`);
+    console.log(
+      `🚀 [OllamaService] Starting intelligent response generation with prompt: ${prompt}, model: ${model}`
+    );
 
     try {
       const weatherIntent = await this.intelligentWeatherIntentDetection(
         prompt,
         model
       );
-      console.log("🎯 [OllamaService] Weather intent detected:", weatherIntent);
+      console.log(
+        "🎯 [OllamaService] Weather intent detected:",
+        JSON.stringify(weatherIntent)
+      );
 
       let weatherData = null;
       if (weatherIntent.type !== "none") {
-        // Step 2: Call appropriate weather service
-        console.log("🔧 [OllamaService] Step 2: Calling weather service");
         weatherData = await this.callWeatherTool(weatherIntent);
         console.log("📊 [OllamaService] Weather data obtained:", !!weatherData);
       } else {
         console.log(
-          "⏭️ [OllamaService] Step 2: Skipping weather service (no weather intent detected)"
+          "⏭️ [OllamaService] Skipping weather service (no weather intent detected)"
         );
       }
 
-      // Step 3: Generate final response
-      console.log("💬 [OllamaService] Step 3: Generating final response");
+      console.log("💬 [OllamaService] Generating final response");
       const systemPrompt = weatherData
         ? `You are a helpful weather assistant with access to current weather information. Answer the user's question directly and naturally using the weather information available to you.
 
@@ -325,7 +330,21 @@ Current Weather Information Available:
 ${JSON.stringify(weatherData, null, 2)}
 
 Answer the user's question directly using this weather information.`
-        : `You are a helpful AI assistant. Answer the user's question naturally and conversationally using markdown formatting. If they asked about weather but no specific weather data was found, politely explain what weather information you can help with and suggest they ask about specific cities (Kolkata, Mumbai, Delhi, Bangalore, Howrah).`;
+        : `You are a specialized weather assistant. I can only help with weather-related questions such as:
+
+## What I can help with: 🌤️
+- **Weather conditions** in specific cities (Kolkata, Mumbai, Delhi, Bangalore, Howrah)
+- **Temperature comparisons** between cities
+- **Air quality information** and pollution levels
+- **Weather forecasts** and current conditions
+
+## Examples of questions I can answer:
+- "How's the weather in Mumbai?"
+- "Which cities have the hottest weather today?"
+- "Show me cities with good air quality"
+- "What's the temperature in Bangalore?"
+
+I'm sorry, but I cannot help with programming, coding, math problems, or other non-weather related topics. Please ask me about weather conditions instead! 🌦️`;
 
       console.log(
         "📤 [OllamaService] Sending final response request to Ollama"
