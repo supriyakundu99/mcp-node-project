@@ -4,10 +4,12 @@ import { handleWeatherMcpPostMessage } from './mcp/weather-mcp-http';
 import { IncomingMessage, ServerResponse } from 'http';
 import { handleStudentMcpPostMessage } from './mcp/student-mcp-http';
 import { OllamaService } from './services/ollama.service';
+import { WeatherService } from './services/weather.service';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const ollamaService = new OllamaService();
+const weatherService = new WeatherService();
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
@@ -40,6 +42,21 @@ app.post('/mcp-weather', (req, res) => {
 app.post('/mcp-student', (req, res) => {
   console.log('Received request at /mcp-student');
   handleStudentMcpPostMessage(req as IncomingMessage, res as unknown as ServerResponse);
+});
+
+// Weather API
+app.get('/weather/:city', async (req: Request, res: Response) => {
+  const { city } = req.params;
+  res.json(await weatherService.getWeatherDataByCity(city));
+});
+
+// Get cities by AQI threshold
+app.get('/aqi/cities', async (req: Request, res: Response) => {
+  const threshold = parseInt(req.query.threshold as string);
+  const isHigher = req.query.isHigher === 'true';
+
+  const result = await weatherService.getCitiesByAQI(threshold, isHigher);
+  res.json(result);
 });
 
 app.listen(PORT, () => {

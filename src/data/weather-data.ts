@@ -1,4 +1,4 @@
-interface WeatherInfo {
+export interface WeatherInfo {
   city: string;
   temperature: string;
   weather: string;

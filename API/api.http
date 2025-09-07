@@ -14,3 +14,12 @@ Content-Type: application/json
 {
   "prompt": "What is the capital of India?"
 }
+
+### Weather API - Get weather by city
+@city = Howrah
+GET {{serverUrl}}/weather/{{city}}
+
+### AQI API - Get cities by AQI threshold
+@threshold = 100
+@isHigher = true
+GET {{serverUrl}}/aqi/cities?threshold={{threshold}}&isHigher={{isHigher}}
