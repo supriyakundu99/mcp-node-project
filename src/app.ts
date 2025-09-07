@@ -5,10 +5,12 @@ import { IncomingMessage, ServerResponse } from 'http';
 import { handleStudentMcpPostMessage } from './mcp/student-mcp-http';
 import { WeatherOllamaService } from './services/ai/weather-ollama.service';
 import { WeatherService } from './services/system/weather.service';
+import { StudentOllamaService } from './services/ai/student-ollama.service';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ollamaService = new WeatherOllamaService();
+const weatherOllamaService = new WeatherOllamaService();
+const studentOllamaService = new StudentOllamaService();
 const weatherService = new WeatherService();
 
 app.use(express.json());
@@ -30,7 +32,8 @@ app.post('/api/ollama', async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Prompt is required' });
   }
   
-  const result = await ollamaService.generateResponse(prompt, model);
+  // const result = await weatherOllamaService.generateResponse(prompt, model);
+  const result = await studentOllamaService.generateResponse(prompt, model);
   res.json(result);
 });
 
